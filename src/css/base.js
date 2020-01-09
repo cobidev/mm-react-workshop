@@ -26,11 +26,11 @@ export default createGlobalStyle`
   }
 
   &::-moz-selection {
-    background: #663399;
+    background: #2575fc;
     color: white;
   }
   &::selection {
-    background: #663399;
+    background: #2575fc;
     color: white;
   }
   

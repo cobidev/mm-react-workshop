@@ -11,7 +11,7 @@
     "@reach/tabs": "^0.1.6",
     "babel-plugin-styled-components": "^1.10.6",
     "elastic-scroll-polyfill": "^2.1.0",
-    "gatsby": "^2.17.4",
+    "gatsby": "^2.18.20",
     "gatsby-image": "^2.2.29",
     "gatsby-plugin-catch-links": "^2.1.15",
     "gatsby-plugin-google-analytics": "^2.1.23",

@@ -8,38 +8,34 @@ import Image from '../components/Image'
 
 Bueno, arranquemos viendo los requerimientos para correr todo:
 
-| Windows                                                            | MacOS                                                               | Linux                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
-|                                                                    | [Homebrew](https://brew.sh/)                                        | [Homebrew](https://brew.sh/)                                     |
-|                                                                    | Xcode Command Line Tools <br/> **(xcode-select --install)**         |                                                                  |
-| [NodeJS](https://nodejs.org/es/)                                   | Node.js **(brew install node)**                                     | Node.js **(brew install node)**                                  |
-| [Git](https://www.atlassian.com/git/tutorials/install-git#windows) | [Git](https://www.atlassian.com/git/tutorials/install-git#mac-os-x) | [Git](https://www.atlassian.com/git/tutorials/install-git#linux) |
-| Gatsby-CLI <br/> **(npm i -g gatsby-cli)**                         | Gatsby-CLI <br/> **(npm i -g gatsby-cli)**                          | Gatsby-CLI <br/> **(npm i -g gatsby-cli)**                       |
+| Windows                                                            | MacOS                                                               | Linux                                                                |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------|
+|                                                                    | [Homebrew](https://brew.sh/)                                        |                                                                      |
+| [NodeJS](https://nodejs.org/es/)                                   | Node.js **(brew install node)**                                     | [Node.js](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/) |
+| [Git](https://www.atlassian.com/git/tutorials/install-git#windows) | [Git](https://www.atlassian.com/git/tutorials/install-git#mac-os-x) | [Git](https://www.atlassian.com/git/tutorials/install-git#linux)     |
+| [Yarn](https://yarnpkg.com/en/docs/install#windows-stable)         | Yarn **(brew install yarn)**                                        | [Yarn](https://yarnpkg.com/en/docs/install#debian-stable)            |
 
-Genial, si instalamos todo eso ya vamos a tener a nuestra disposición el CLI
-(Interfaz de Línea de Comandos) de Gatsby para poder hacer muchas cosas, veamos
-algunos comandos que nos ofrece y que vamos a usar seguido:
+Genial, si instalamos todo eso ya vamos a poder empezar nuestro proyecto React. Yo previamente cree un proyecto starter y esta alojado en GitHub, este fue creado con [Create React App](https://es.reactjs.org/docs/create-a-new-react-app.html) pero un poco mas simplificado de mi parte.
 
-- **gatsby new <Nombre_proyecto> <Starter_opcional>**: Comando para empezar a
-  hacer una web app en Gatsby en la carpeta Nombre_proyecto. Si queremos podemos
-  definir un "starter", aunque si no ponemos nada, hay uno por default con una
-  buena base de cosas preinstaladas.
-- **gatsby develop**: Corre un entorno local de desarrollo para ver nuestra app.
-- **gatsby build**: Genera una carpeta "public" con nuestra web app lista para
-  producción.
-
-Empecemos entonces creando nuestro proyecto en una carpeta que querramos, yo en
-este caso voy a llamarlo `miPortfolio` y voy a usar el starter por defecto,
-ustedes ponganle el nombre que más les guste 😀
+Entonces, desde la terminal:
 
 ```bash
-gatsby new miPortfolio
-cd miPortfolio
+# 1) clonamos nuestro proyecto
+git clone https://github.com/cobidev/mm-asaditojs-starter
+
+# 2) nos dirigimos a la carpeta del proyecto
+cd mm-asaditojs-starter
+
+# 3) removemos la conexion con el repositorio principal
+git remote remove origin
 ```
 
-Tomémonos un segundo para abrir esta carpeta con nuestro proyecto en nuestro
-editor preferido de texto ([VS Code](https://code.visualstudio.com/download) en
-mi caso) y estudiemos un poco los archivos y las carpetas que tiene, nos va a
+Ok ok vamos por paso:
+- 1) Esto nos traera el proyecto alojado en GitHub, con el que empezaremos. 
+- 2) Tan simple como dirigirnos a la carpeta del proyecto
+- 3) Tan solo es para eliminar cualquier vinculo con el repositorio en GitHub, para que en un futuro puedan subir su proyecto a su GitHub personal, asi no mas 😌
+
+Ahora, tomémonos un segundo para abrir la carpeta generada con nuestro proyecto, en mi caso yo utilizo este editor de texto [VS Code](https://code.visualstudio.com/download). Estudiemos un poco los archivos y las carpetas que tiene, nos va a
 servir saber qué hace cada cosa para no dar pasos en falso y que luego no
 tengamos dolores de cabeza intentando entender qué es lo que está pasando cuando
 modifiquemos cosas.
@@ -50,110 +46,18 @@ modifiquemos cosas.
   style={{ width: '30vw', margin: '0 auto' }}
 />
 
-## Archivos del proyecto
-
-Empecemos por los archivos importantes propios de Gatsby, son esos 4 que están
-afuera de `src`:
-
-- [`gatsby-config`](https://www.gatsbyjs.org/docs/api-files-gatsby-config/):
-  Este es un archivo fundamental para nuestro proyecto, acá van a estar todas
-  las configuraciones de nuestros plugins, además de la metadata de nuestra
-  página y otras configuraciones generales.
-- [`gatsby-node`](https://www.gatsbyjs.org/docs/api-files-gatsby-node/)**\***:
-  Todo el código que esté en este archivo va a correr durante el proceso de
-  _build_ de nuestra página. Se puede usar para crear páginas de forma dinámica,
-  agregar nodos en GraphQL o responder a eventos que suceden durante el _build_.
-- [`gatsby-browser`](https://www.gatsbyjs.org/docs/api-files-gatsby-browser/)**\***:
-  Mediante este archivo vamos a poder responder a acciones dentro del browser y
-  también nos permite _wrappear_ nuestra página dentro de componentes. Nos
-  permite interactuar con la parte _client-side_ de Gatsby.
-- [`gatsby-ssr`](https://www.gatsbyjs.org/docs/api-files-gatsby-ssr/)**\***:
-  Aquí podemos alterar el contenido de los HTML mientras están siendo
-  _Server-Side Rendered (SSR)_ (o renderizados del lado del servidor) por Gatsby
-  y Node.js.
-
-_Cada uno de estos archivos tiene una entrada en las docs de Gatsby, si cliquean
-en los nombres de cada uno pueden leer más sobre cada uno._
-
-Ahora, por qué todos tienen un asterisco salvo `gatsby-config`, se preguntarán?
-Bueno, es porque es el único **estrictamente necesario** para que nuestra página
-en Gatsby funcione, los otros tres son opcionales. Y si quieren leer más sobre
-las APIs disponibles en cada uno de los archivos opcionales, les dejo los links
-de la documentación para
-[Gatsby Node APIs](https://www.gatsbyjs.org/docs/node-apis/),
-[Gatsby Browser APIs](https://www.gatsbyjs.org/docs/browser-apis/) y
-[Gatsby SSR APIs](https://www.gatsbyjs.org/docs/ssr-apis/).
-
 ## Carpetas del proyecto
 
-Para las carpetas vamos a ver pocas realmente importantes en nuestro proyecto
-ahora, pero hay otras que tienen su grado de importancia dependiendo de lo que
-estemos haciendo, veamos:
+A continuacion colocare las carpetas mas relevantes de nuestro proyecto.
 
 - `/src`: En esta carpeta va a estar todo el código de lo que veamos en el
-  frontend de nuestra página.
-  - [`/pages`](https://www.gatsbyjs.org/docs/recipes/#creating-pages): Esta
-    carpeta es medio _mágica ✨_ porque por cada componente que creemos acá,
-    Gatsby va a crear automáticamente una ruta con el nombre. (Salvo por index y
-    404 jajaja. Por ejemplo, si creo el archivo `about.js`, automáticamente
-    podemos ingresar a `/about` y vamos a ver lo que pongamos en ese componente
-    recién creado)
-  - `/components`: Como su nombre lo indica, acá van a estar los componentes que
-    usemos en nuestras _pages_.
-  - `/images`: Acá pondremos todas las imágenes que usemos. Si vemos el archivo
-    `gatsby-config.js` vemos que ya está configurada esta carpeta para
-    aprovechar la optimización de imágenes de Gatsby.
-  - [`/templates`](https://www.gatsbyjs.org/docs/building-with-components/#page-template-components):
-    Esta carpeta no está en nuestro proyecto pero es útil para definir templates
-    con data que venga de algún otro archivo de Gatsby, uno que genere páginas y
-    necesite una estructura como template.
-- [`/.cache`](https://www.gatsbyjs.org/docs/api-files-gatsby-browser/):
-  _Generada automáticamente por Gatsby_, esta carpeta la genera Gatsby en _build
-  time_ y va a tener un cache interno y no debemos modificarla.
-- [`/public`](https://www.gatsbyjs.org/docs/api-files-gatsby-ssr/): _Generada
-  automáticamente por Gatsby_, los archivos generados luego del _build process_
+  Front-End de nuestra página.
+- `/components`: Como su nombre lo indica, acá van a estar los componentes que seran parte de nuestra aplicacion. Literal, pasaremos todo el workshop dentro de esta carpeta 😮
+- `/public`: Los archivos generados luego del _build process_
   van a parar a esta carpeta. Va a contener los HTML, CSS, JS y demás archivos
   de nuestro proyecto generados de tal forma que podríamos copiar los contenidos
   de la carpeta en un host "común" y levantaría nuestra página tal como la vimos
-  mientras la estábamos desarrollando.
+  mientras la estábamos desarrollando. **De momento no es necesario preocuparnos en el contenido de esta carpeta!**
 
-## Routing
-
-Esta es (para mi) una de las mejores cosas de Gatsby, tiene `Reach-router`
-(próximamente se fusiona con `React-router`) preconfigurado para que genere una
-ruta nueva cada vez que creemos un archivo en la carpeta `src/pages`. Hay otra
-forma de crear páginas desde el archivo `gatsby-node.js`, pero vamos a verlo más
-adelante.
-
-Además, para navegar entre páginas de nuestro proyecto, Gatsby nos provee de un
-componente llamado [**gatsby-link**](https://www.gatsbyjs.org/docs/gatsby-link/)
-el cual nos provee de algunas bondades como prefetching, lo que hace que las
-transiciones entre páginas sean casi instantáneas. 😉
-
-## Imágenes y lazy loading
-
-Alguna vez vieron el efecto "blur-up" ese que está en los posts de Medium? No?
-Bueno, Gatsby tiene optimización de imágenes GRATIS y con configuración mínima
-(en el caso del starter por default, ya viene configurado así que no tendríamos
-que hacer nada). Gatsby nos propone dos formas de mostrar nuestras imágenes:
-
-- `Fluid`: Gatsby crea distintos tamaños flexibles de nuestras imágenes que se
-  adaptan al contenedor donde las usemos. Por ejemplo, si el `max-width` del
-  contenedor es 800px, se van a crear imágenes de los tamaños 200px, 400px,
-  800px, 1200px y 1600px; lo necesario para que Gatsby después cargue la más
-  óptima según el tamaño de dispositivo o resolución de pantalla.
-- `Fixed`: Gatsby crean distintos tamaños de imágenes para diferentes
-  resoluciones pero con un `width` y `height` fijos. Crea imágenes a 1x, 1.5x y
-  2x para luego cargar la que considere más óptima.
-
-Para ver los diferentes efectos que podemos usar durante la precarga de las
-imágenes, podemos entrar en
-[este link](https://using-gatsby-image.gatsbyjs.org/).
-
-Probemos cómo se ve por ahora nuestro proyecto y chequeemos la velocidad que
-tiene para pasar entre páginas usando el comando **gatsby develop** 🚀🚀🚀🚀🚀
-
-Bueno, hasta ahora pudimos ver un poco de la estructura del proyecto por default
-que nos provee Gatsby, pero con esto solamente estamos raspando la superficie y
-cada tema se puede ahondar muchísimo más. Vamos a la próxima parte donde vamos a
-hablar del sistema de Plugins que tiene Gatsby que es **hermoso**.
+Muy bien, con esto solamente estamos raspando la superficie y cada tema se puede ahondar muchísimo más. Vamos a la próxima parte donde vamos a
+empezar a construir nuesta app 🐈🐈🐈🐈🐈

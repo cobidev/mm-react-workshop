@@ -25,9 +25,9 @@ const NavButton = styled(Link)`
     props['data-next'] ? 'none' : '1px solid rgba(0, 16, 64, 0.15)'};
   border-radius: 4px;
   background: ${props =>
-    props['data-next'] ? 'linear-gradient(90deg,#f6edfa,#d9bae8)' : 'white'};
+    props['data-next'] ? 'linear-gradient(90deg,#000,#273c5f )' : 'white'};
   text-decoration: none;
-  color: ${props => (props['data-next'] ? '#663399' : 'inherit')};
+  color: ${props => (props['data-next'] ? '#fff' : 'inherit')};
   filter: ${props => props['data-next'] && 'saturate(1.15)'};
   font-weight: bold;
   transition: box-shadow 0.2s;

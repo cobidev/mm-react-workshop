@@ -36,13 +36,6 @@ module.exports = {
         icon: `src/favicon.png`,
       },
     },
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        trackingId: 'UA-150973611-1',
-        head: false,
-      },
-    },
     `gatsby-plugin-catch-links`,
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.app/offline
@@ -54,14 +47,16 @@ module.exports = {
         defaultLayouts: {
           default: require.resolve('./src/components/Layout.js'),
         },
-        gatsbyRemarkPlugins: [{
-          resolve: `gatsby-remark-prismjs`,
-          options: {
-            classPrefix: 'language-',
-            inlineCodeMarker: null,
-            aliases: {},
+        gatsbyRemarkPlugins: [
+          {
+            resolve: `gatsby-remark-prismjs`,
+            options: {
+              classPrefix: 'language-',
+              inlineCodeMarker: null,
+              aliases: {},
+            },
           },
-        }],
+        ],
       },
     },
     {

@@ -1,11 +1,7 @@
-import {
-  createGlobalStyle
-} from 'styled-components'
-import {
-  MEDIA
-} from '../components/Framework'
+import { createGlobalStyle } from 'styled-components'
+import { MEDIA } from '../components/Framework'
 
-export default createGlobalStyle `
+export default createGlobalStyle`
   code,
   pre {
     font-family: Menlo, Consolas, 'Liberation Mono', Courier, monospace;
@@ -63,8 +59,8 @@ export default createGlobalStyle `
   }
 
   code.language-text {
-    background: linear-gradient(90deg, #f3edff, #f6edfa);
-    color: #663399;
+    background: #d1ddff;
+    color: #273c5f;
     font-weight: bold;
     padding: 0.2em 0.4em;
     border-radius: 4px;

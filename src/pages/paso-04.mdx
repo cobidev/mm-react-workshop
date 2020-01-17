@@ -1,0 +1,179 @@
+---
+title: Workshop - Paso 4
+path: /paso-04
+index: 5
+---
+
+import Image from '../components/Image'
+
+# Conditional rendering y Eventos
+
+Como ultimo, vamos a crear los **eventos CLICK** para nuestros botones para poder generar un gatito aleatorio y poder agregar alguno como favorito. Luego de eso tendremos que renderizar nuestra vista dinamicamente dependiendo del State de nuestra aplicacion, en nuestro caso: renderizar nuestra lista de favoritos!
+
+Primero que nada necesitamos pasar las funciones previamente creadas como `props` a el componente **Card** y tambien nuestro State `gifUrl`, dado que **Card** contiene los componentes **Button**, y con el State `gifUrl` haremos nuestro [**Conditional Rendering**](https://es.reactjs.org/docs/conditional-rendering.html)
+
+## APP component
+
+Ejemplo:
+
+```jsx
+// En el return de nuestro componente APP
+return (
+  <div className="main-wrapper">
+    <Title />
+
+    <Card
+      gifUrl={gifUrl}
+      getRandomGifUrl={getRandomGifUrl}
+      addFavoriteGif={addFavoriteGif}
+    />
+
+    <List />
+  </div>
+);
+```
+
+## Card component
+
+Ahora nos dirigimos a nuestro componente **Card** para acceder a esas 3 `props`:
+
+```jsx
+import React from "react";
+import Button from "./Button";
+
+const Card = ({ gifUrl, getRandomGifUrl, addFavoriteGif }) => {
+  return (
+    ...
+```
+
+Luego, mas abajo de nuestro **Card** dentro del `return` statement, abrimos `{ }` para ejecutar codigo JavaScript y chequeamos si `gifUrl` no es una **string** vacia, si lo es entonces renderizamos un **span** con un emoji de un 🐈. De lo contrario renderizamos un **img** con el `src` de `gifUrl` dinamicamente con los `{ }`. De esta manera se mostrara el GIF del gatito porque le pasamos a el `src` la URL proveniente del State!
+
+Luego, mas abajo en el primer componente **Button** le pasamos otra `prop`, la que nos traimos desde **Card**, recuerdan? Si! las funciones para los eventos. Cada **Button** tendra una finalidad distinta, por eso al primero **Button** le pasamos `getRandomGifUrl={getRandomGifUrl}` y al segundo **Button** le pasamos la otra funcion `addFavoriteGif={addFavoriteGif}`!
+
+```jsx
+  return (
+    <div className="card">
+      {gifUrl === "" ? (
+        <p className="subtitle">
+          <span className="emoji" role="img" aria-label="Cat">
+            🐈
+          </span>
+        </p>
+      ) : (
+        <img className="margin-bottom" src={gifUrl} alt="Cat" />
+      )}
+
+      <div className="button-wrapper">
+        <Button category="random" getRandomGifUrl={getRandomGifUrl} />
+        <Button category="favorite" addFavoriteGif={addFavoriteGif} />
+      </div>
+    </div>
+  );
+};
+
+export default Card;
+```
+
+## Button component
+
+Muy bien! Ya falta poco ✋✋✋✋ Ahora nos vamos a el componente **Button**, y le agregamos un evento `onClick` a nuestro elemento `<button />`. Para ello accedemos a las `props` y lo pasamos dentro de el `onClick`. Pero antes, nos tenemos que fijaar en el tipo de `category`, para pasarle la funcion correspondiente a el **Button**:
+
+- `onClick` retorna una funcion, asi que abrimos `{ }` y pasamos una funcion que retornara ya sea `getRandomGifUrl()` o `addFavoriteGif()`;
+- Al darle click, ese evento se ejecuta y recorre todo el camino a donde fue invocada (que seria el componente **APP**), y seteariamos el State!
+
+```jsx
+import React from "react";
+
+const Button = ({ category, getRandomGifUrl, addFavoriteGif }) => {
+  return (
+    <button
+      type="button"
+      className={`button button--${category}`}
+      onClick={() =>
+        category === "random" ? getRandomGifUrl() : addFavoriteGif()
+      }
+    >
+      <span role="img" aria-label={category}>
+        {category === "random" ? "🎲" : "⭐️"}
+      </span>
+    </button>
+  );
+};
+
+export default Button;
+```
+
+**NOTA**: De seguro vieron el `className`, le pase una clase `.button--${category}`, pero que signfica eso? bueno, nosotros podemos agregar clases de CSS dinamicas utilizando [**Template Strings**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/template_strings). Y como habia explicado, para ejecutar codigo **JavaScript** dentro de **JSX** abrimos los `{ }` y consecuentemente abrimos un template string para agregar nuestras clases.
+
+Al final, dependiendo de la `prop` `category` podras renderizar una clase llamada ya sea: **.button--random** o **.button--favorite** 🙂
+
+## List component
+
+A **List** necesitamos pasarle el State de `favorites` como `prop` y eso lo hacemos desde el component **APP**, en el `return` le pasamos `favorites={favorites}` a **List**, con esto le estariamos pasando el Array 🙌
+
+```jsx
+// App component
+
+return (
+    <div className="main-wrapper">
+      <Title text="pick your favorite gif cat" />
+
+      <Card
+        gifUrl={gifUrl}
+        getRandomGifUrl={getRandomGifUrl}
+        addFavoriteGif={addFavoriteGif}
+      />
+
+      <List favorites={favorites} />
+    </div>
+  );
+```
+
+Ahora, nos dirigmos a **List** y recibimos ese parametro como una `prop` utilizando **destructuring**.
+
+```jsx
+import React from "react";
+
+const List = ({ favorites }) => {
+  return (
+    <div className="list">
+      <h2>Mi lista de favoritos</h2>
+      {favorites.length === 0 ? (
+        <p>Aun no has agregado ningun favorito :(</p>
+      ) : (
+        <div className="list-wrapper">
+          {favorites.map(url => {
+            return (
+              <div className="list-item" key={url}>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <img src={url} alt="Favorite Cat" />
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default List;
+
+```
+Wow, quizas parezca intimidante este componente porque vemos muchos `{ }` y `( )` jejeje. Pero en realidad, tan solo aplicamos **Conditional Rendering**, vamos por paso 😏
+
+- Chequeamos si el `length` del Array `favorites` es igual a 0 (esto quiere decir, si no existen elementos), entonces renderizamos un mensaje indicando que no hemos agregado nada.
+- Si el `length` es mayor a 0, quiere decir que tiene algunas URLs dentro. Entonces retornamos un `<div>` que dentro contendra un [**map()**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/map) que recorrera cada elemento del Array `favorites`.
+- Este metodo `map` necesita retornar algo, bueno retornamos 1 `<div>` para cada **URL** en la iteracion.
+- Dentro de ese `<div>` podremos ver que existe un`<a>` y un `<img>`, al **a** le pasamos el `href` de la **URL** iterada, al igual que al `<img>`, le seteamos el `src` con la **URL** iterada.
+
+---
+
+## Y con esto, terminamos nuestra app! 😀😀😀😀
+
+<iframe src="https://giphy.com/embed/fxsqOYnIMEefC" width="480" height="217" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/well-done-fxsqOYnIMEefC">via GIPHY</a></p>
+
+
+Espero que hayan disfrutado este workshop, cualquier duda o sugerencia
+escríbanme y con gusto ayudo en lo que pueda, pueden encontrarme en Twitter como
+[@cobidev](https://twitter.com/cobidev), nos vemos!

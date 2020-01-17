@@ -1,325 +1,51 @@
 ---
 title: Workshop - Paso 2
 path: /paso-02
-index: 5
+index: 3
 ---
 
 import Image from '../components/Image'
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@reach/tabs'
 
-Bueno, ya aprendimos aunque sea lo básico para poder consultar data en GraphQL,
-ahora les tengo que dar una mala noticia, todo eso ~~no sirvió para nada~~ nos
-sirve un montón! 🤣 Nah, la mala noticia es que vamos a tener que usar una
-versión de GraphiQL vieja en la página de Github que no tiene el Explorer de la
-izquierda que tenemos con Gatsby que es SUPER UTIL y ayuda un montón.
+# El State de nuestra APP
 
-Vamos a [la API GraphQL de Github](https://developer.github.com/v4/explorer/)!
+En este paso vamos a crear el State de nuestra aplicacion, el [**State**](https://es.reactjs.org/docs/state-and-lifecycle.html) o State es la data que va a persistir en nuestro componente, que a su vez ira cambiando mediante acciones o eventos. En nuestro caso, el GIF de gato proviene de una URL que ira cambiando siempre que le demos click a un button. Por lo tanto, la URL de nuestro GIF tiene que ser un State ya que es un dato que debe actualizarse constantemente y es un dato que tiene que pasarse a los componentes hijos.
 
-<Image imgName="ghgraphql.png" alt="Github GraphQL API" />
+Para setear un State, vamos a utiliar un [**Hook**](https://es.reactjs.org/docs/hooks-intro.html) porque nuestro componente es funcional y no de tipo clase. Nos vamos a ubicar en el componente **App** e importamos desde `react` algo llamado `{ useState }`.
 
-Esto es un poco más complicado pero si hacemos click arriba a la derecha en
-**Docs**, vamos a ver un poco de info sobre qué estamos consultando. Si borramos
-viewer y login (y sus respectivas llaves) podemos ver lo que nos sugiere
-GraphiQL si empezamos a tipear. O sino tenemos la
-[docu de la API GraphQL de Github](https://developer.github.com/v4/), pero mejor
-pensemos juntos y vamos viendo qué estamos necesitando.
+Luego, crearemos un State para el GIF URL, como dato sera de tipo **string**. Este `hook` recibe 2 valores, el dato en si y un metodo que actualizara ese dato. La sintaxis quedaria de esta manera: `const [gifUrl, setGifUrl] = useState("")`.
 
-La data que traigamos con la query que hagamos acá, es la data que después vamos
-a tener disponible en nuestro backend (creo que ya lo dije, no? jaja), así que
-veamos, nosotros necesitamos traer nuestros repos, entonces escribamos eso en
-nuestra query:
+**NOTA**: Dentro de los parentesis de `useState()` podemos pasarle el valor inicial que queramos, ya sea numeros, arrays u objetos.
 
-<Image imgName="repos.png" alt="Github GraphQL API query" />
+Como ultimo, vamos a necesitar otro State que se llamara **favorites** que sera un Array que contendra muchos GIF URLS (En nuestro caso, nuestros GIF de Gatos favoritos), para luego renderizar cada uno en pantalla.
 
-**BUENO ESO DE LOS REPOS ERA MENTIRA**, borren eso y como dije antes, lean la
-documentación de todo lo que usen. 😂
-
-Por practicidad y para no hacerles perder el tiempo, hagamos bien la query.
-Nosotros sí necesitamos los repos, pero **de cierto usuario** (_el nuestro_),
-así que borremos "repos" y escribamos "user", lo cual nos va a sugerir un dato
-de ese tipo, cliqueemos para seleccionarlo. Ahora posicionemos nuestro puntero
-del mouse sobre user un par de segundos y veremos que nos aparece un cartel
-explicando el tipo de dato que estamos consultando, hagamos click en el "user"
-azul, lo cual nos despliega la documentación sobre ese dato.
-
-<Image imgName="queryuser.png" alt="Querying the user in github" />
-
-Ahí a la derecha vemos los argumentos que acepta este dato, que sería **login:
-String!**. Esto nos indica que vamos a tener que indicar un String con clave
-**login** y el signo de exclamación **!** indica que este valor es _requerido_,
-así que nos debería quedar algo así:
-
-```javascript
-query {
-  user (login: "agustinmulet") {
-    //Acá seguimos
-  }
-}
-```
-
-Obviamente pongan entre comillas **su usuario** 😜 sigamos, ya sabemos que vamos
-a recibir algo de cierto user, necesitamos ahora sí que sean los repos!
-Escribamos "repos" ahora en serio 🤣. Esto nos va a sugerir, entre otras cosas,
-_repository_ y _repositories_, si necesitamos lo**s** repositorio**s**, cuál les
-parece que vamos a necesitar? 😉
-
-Si hacemos lo mismo que con _user_ antes, podemos ver los argumentos que podemos
-usar con lo que nos estamos trayendo. Si eligieron bien, deberíamos ver varios
-como privacy, orderBy, affiliations, etc. No sé a ustedes, pero a mi me gustó
-que esté primero privacy, ya que nosotros solamente vamos a querer mostrar
-nuestros repos públicos, así que agreguemos ese filtro, escribamos `(privacy: )`
-y les cuento un truquito: aprieten `Ctrl + barra espaciadora` y les va a sugerir
-los distintos tipos de repos que acepta `privacy`, esto nos va a simplificar el
-laburo 😄
-
-Si hicimos todo bien, presionando Ctrl + barra adentro deberíamos tener algo
-así:
-
-<Image
-  imgName="privacy.png"
-  alt="Consultando repos Github API"
-  style={{ width: '50vw', margin: '0 auto' }}
-/>
-
-**KESESO? edges, nodes, whaaattt???** Bueno, acá les voy a explicar algo como yo
-lo entiendo y como me viene funcionando: cuando queremos traernos una colección
-de cosas, en este caso de nuestros repositorios, `edges` representa la colección
-o el **array** y dentro de `edges`, un dato llamado `node` va a representar
-**cada objeto** dentro de esa colección o array. Se entiende? Quizás cuesta un
-poco al principio pero cuanto más usemos GraphQL más se afianzan todos estos
-conceptos.
-
-Ahora bien, nosotros necesitamos ese array, así que vayamos con los `edges` y
-dentro consultemos por cada `node`, que representa cada uno de nuestros repos 😎
-ya casi estamos, no me odien jaja. Si hacemos Ctrl + barra vemos un
-montó´´oóóóón de datos que podemos traer de cada repo, elijan los que les
-parezcan más útiles de mostrar! Ahora denle al botoncito de "Play" de arriba
-y... **Momento, esto tira error, Agustin ahora sí te odio 🤬🤬😡** Pero 😢 lean
-mejor el mensaje de error que les dice GraphiQL! Falta proveer un dato `first` o
-`last` a los _repositories_, hagamos eso, sumemos al lado de _privacy_ y
-pongamos por ejemplo **first: 50** (no sé ustedes pero yo no tengo más de 15-20
-repos en mi cuenta) Demos "Play" de nuevo y veremos nuestros hermosos repos en
-cualquier orden 🤣 Podemos ordenarlos con el filtro `orderBy`, pero ya les dejo
-a ustedes que ordenen como les guste 😀 Les dejo cómo hice yo mi query y cómo
-debería quedar el `gatsby-config.js` acá abajo 👇
-
-<Tabs>
-<TabList>
-    <Tab>Soluciones</Tab>
-    <Tab>Mi query</Tab>
-</TabList>
-
-<TabPanels>
-
-<TabPanel>Para ver la solución hacé click en la pestaña 👆</TabPanel>
-
-<TabPanel>
-
-```javascript
-graphQLQuery: `query {
-  user (login:"agustinmulet"){
-  repositories(first:50,orderBy:{field:STARGAZERS, direction:DESC},privacy:PUBLIC){
-    edges {
-      node {
-        id
-        name
-        description
-        isPrivate
-        url
-      	}
-    	}
-  	}
-  }
-}`,
-
-```
-
-</TabPanel>
-</TabPanels>
-</Tabs>
-
-Ahora, como modificamos uno de los archivos de Gatsby, debemos frenar el
-servidor local haciendo **Ctrl + C** y volver a levantarlo corriendo **gatsby
-develop**. Vayamos a GraphiQL en http://localhost:8000/___graphql y si vemos a
-la izquierda, veremos que tenemos algo nuevo para consultar: `allGithubData` y
-`githubData`! 😃 Genial, ahora les dejo armar la query para usar en el frontend,
-les dejo como tip que usen `githubData` y no la que sería **all** ya que esa
-sería por si traemos cosas de varios usuarios, nosotros tenemos uno, así que nos
-alcanza con consultar la data de `githubData` nomás. Otra cosa a tener en
-cuenta: las queries pueden tener nombre o no, **query Nombre {}**, lo que sí,
-hay que tener en cuenta que esos nombres **no se pueden repetir** en nuestro
-proyecto.
-
-Bueno, con el ejemplo del uso de query + uso de datos en el front en el
-componente `layout.js`, les dejo pensar y hacer la query de nuestros repos y
-mostrar esa data. Pueden hacer un componente nuevo si quieren, o en una _page_,
-lo que más les guste. Les dejo mi componente acá 👇 y pasamos a la siguiente
-parte.
-
-<Tabs>
-<TabList>
-    <Tab>Soluciones</Tab>
-    <Tab>misrepos.js</Tab>
-</TabList>
-
-<TabPanels>
-
-<TabPanel>Para ver la solución hacé click en la pestaña 👆</TabPanel>
-
-<TabPanel>
+La sintaxis seria la siguiente: `const [favorites, setFavorites] = useState([])`.
 
 ```jsx
-import React from 'react'
-import { useStaticQuery, graphql } from 'gatsby'
+import React, { useState } from "react";
+import Title from "./components/Title";
+import Card from "./components/Card";
+import List from "./components/List";
 
-const MisRepos = () => {
-  const repos = useStaticQuery(graphql`
-    query MisReposQuery {
-      githubData {
-        data {
-          user {
-            repositories {
-              edges {
-                node {
-                  description
-                  id
-                  isPrivate
-                  name
-                  url
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  `)
-  console.log(repos.githubData.data.user.repositories.edges)
+const App = () => {
+  const [gifUrl, setGifUrl] = useState("");
+  const [favorites, setFavorites] = useState([]);
+
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>repo.id</th>
-          <th>repo.name</th>
-          <th>repo.isPrivate</th>
-          <th>repo.url</th>
-          <th>repo.description</th>
-        </tr>
-      </thead>
-      <tbody>
-        {repos.githubData.data.user.repositories.edges.map(({ node }) => (
-          <tr key={node.id}>
-            <td>{node.id}</td>
-            <td>{node.name}</td>
-            <td>{node.isPrivate ? 'Privado' : 'Público'}</td>
-            <td>{node.url}</td>
-            <td>{node.description}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
+    <div className="main-wrapper">
+      <Title />
+      <Card />
+      <List />
+    </div>
+  );
+};
 
-export default MisRepos
+export default App;
+
 ```
 
-</TabPanel>
-</TabPanels>
-</Tabs>
+Muy bien! para recapitular:
 
-## Subiendo nuestro proyecto a Netlify
+- El State `gifUrl` contendra un string la URL del gatito
+- El State `favorites` es un Array que contendra muchos strings con URLS de nuestros gatitos favoritos
 
-Gatsby + Netlify = 💝💞
-
-Bueno, como hablamos de la privacidad, antes de subir nuestro proyecto a
-cualquier lado, estaría bueno preservar nuestra key de Github así no viene
-cualquiera y lo usa para cualquier cosa. Usemos entonces variables de entorno 😉
-Empecemos por crear un archivo que se llame `.env.development` (sí, empieza con
-punto) en la raíz de nuestro proyecto (a la misma altura que los archivos
-**gatsby-algo.js**) y luego agreguémoslo en nuestro archivo `.gitignore` así nos
-aseguramos que no subimos ese archivo a nuestro Github. Adentro de este archivo
-**.env.development** vamos a generar una variable de entorno que su nombre
-**DEBE EMPEZAR con** `GATSBY_`, por ejemplo:
-
-```javascript
-GATSBY_GH_KEY=079b55830a613c38aff7f4608ef2448d83db9758
-```
-
-Guardamos y Gatsby como con muchas cosas, ya tiene `dotenv` preconfigurado, así
-que para poder acceder a nuestro archivo recién generado y a la variable de
-entorno agreguemos en nuestro archivo `gatsby-config.js` lo siguiente:
-
-```javascript
-require('dotenv').config({
-  path: `.env.${process.env.NODE_ENV}`,
-})
-```
-
-Y luego en el mismo archivo podemos modificar la configuración del token de
-nuestro plugin de Github por esto:
-
-```javascript
-token: process.env.GATSBY_GH_KEY,
-```
-
-Et voilà! Si bajamos el servidor de desarrollo y lo volvemos a levantar, debería
-seguir funcionando todo normalmente. Ahora nos resta subir nuestro proyecto a
-Github con nuestra key guardadita y a salvo, para eso comencemos por entrar a
-nuestro usuario de Github, a la parte de repositorios y creemos uno nuevo con el
-botón verde **New** que está a la derecha, o
-[entrando en este link](https://www.github.com/new). Luego escribimos un nombre
-para nuestro repositorio \(por ejemplo "MiPortfolio"\) y no hace falta que
-pongamos descripción ni que lo inicialicemos con un README. Vamos al botón de
-abajo de todo y terminamos de crear nuestro repositorio. Se nos va a crear un
-repositorio vacío y el mismo Github que es re copado nos va a decir cómo subir
-nuestro proyecto donde dice
-`…or push an existing repository from the command line`. Entonces abrimos una
-terminal y vamos hasta la carpeta raíz de nuestra app, luego ahí hacemos lo que
-nos dice Github:
-
-```bash
-git remote add origin https://github.com/agustinmulet/MiPortfolio.git
-git push -u origin master
-```
-
-Es probable que nos pida nuestro usuario y constraseña de Github, en ese caso
-ingresamos nuestras credenciales y si todo salió bien, ya tenemos nuestra app
-subida a un repo propio!
-
-Ahora resta hacernos una cuenta en [Netlify](https://www.netlify.com) para subir
-nuestro proyecto, para hacerlo hay que entrar con nuestro usuario a Netlify,
-hacer click en el botón verde de arriba a la derecha que dice **New site from
-Git** e indicarle cuál es el repositorio con nuestra app \(MiPortfolio si le
-pusieron el mismo nombre que yo\), aceptamos y continuamos con las
-configuraciones que detecta automáticamente Netlify (sí, es re copado e
-inteligente), esperamos un poco que haga el deploy y ya \(casi\) está! Lo que
-sí, Netlify nos da un nombre raro para nuestro sitio, así que para cambiar el
-nombre al que querramos \(nombredeapp.netlify.com\), tenemos que \(si es que
-estamos en el Dashboard principal de Netlify\) hacer click en nuestra app recién
-subida con nombre raro, hacer click en el botón `⚙ Site Settings` y en la parte
-de `Site Information` vamos a ver otro botón `Change site name`, donde podemos
-definir el nombre que querramos. Es probable que algún nombre como MiPortfolio
-esté utilizado, pero podemos inventar algo usando nuestro nombre, o algún nombre
-raro que se les ocurra \(elmejorportfolio, wowsomuchportfolio,
-lamejorwebamiguis, loquesea jaja\).
-
-Es probable que nuestro deploy falle, porque nuestra variable de entorno no
-existe. Vamos entonces a agregar nuestra variable de entorno en Netlify. Para
-esto volvemos a `⚙ Site Settings` de nuestro proyecto y ahí dentro a
-`Build & deploy`, `Environment` y creamos una nueva haciendo click en el botón
-`Edit variables`. Nos pide Clave / Valor, por practicidad vamos a poner como
-clave el nombre que venimos usando `GATSBY_GH_KEY`y como valor ponemos nuestra
-API key **079b55830a613c38aff7f4608ef2448d83db9758** todo así sin comillas,
-solamente el texto.
-
-Guardamos y es posible que tengamos que repetir el tema del deploy, pero es la
-forma que conozco de hacerlo funcionar... Para repetir el deploy, vamos al menú
-`Deploys` y a la derecha vemos un dropdown que dice **Trigger deploy**, hacemos
-click ahí y luego en **Deploy site**. Esperamos un rato y deberíamos tener todo
-subido y funcionando 😎
-
-Ahora resta ponerlo lindo usando css, mostrando todo en cards, imágenes, lo que
-les parezca, eso se los dejo a ustedes!
-
-Y si todavía andás con tiempo y ganas, seguí avanzando y hacemos el blog! 😉😉😉
+En el siguiente paso, veremos como obtener esos datos desde una API para luego crear Eventos que actualicen esos datos. Ejemplo: Cuando haces click en un boton, que te traiga un GIF random y lo imprima en pantalla!

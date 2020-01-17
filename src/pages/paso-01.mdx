@@ -1,127 +1,160 @@
 ---
 title: Workshop - Paso 1
 path: /paso-01
-index: 3
+index: 2
 ---
 
 import Image from '../components/Image'
 
-Al fin podemos arrancar a hacer nuestro portfolio! 🎉🎊🎉🎊 Empecemos con lo
-primero, la idea es traernos desde Github nuestros proyectos, así que para
-lograr eso necesitamos consumir la API de GraphQL de Github. Pensemos esto
-_Gatsby style_ como veníamos pensando con los plugins, necesitamos entonces:
+# Creando los componentes
 
-- Una **fuente de datos** (_source_) que van a ser **nuestros proyectos**, la
-  cual vamos a exponer por medio de un plugin de tipo _source_.
-- El mismo plugin se encarga de traernos en un JSON todo preparadito con el
-  texto incluyendo la data que nosotros elijamos 😜, así que no sería necesario
-  **transformar** (_transform_) esa data.
-- Una vez que esté todo hecho y configurado, vamos a poder **usar** esa data en
-  el frontend consultándola por medio de `GraphQL`.
+Lo primero que vamos a ver es como quedara el layout de nuestra aplicacion, para poder definir los componentes y luego crearlos.
 
-Vamos a buscar un plugin de tipo source para lo que necesitamos, entremos en la
-sección de [plugins de Gatsby](https://www.gatsbyjs.org/plugins/) y busquemos en
-la barra de la izquierda "_github_". Vamos a ver que nos sugiere algunas
-opciones pero a nosotros nos interesa
-[**gatsby-source-github-api**](https://www.gatsbyjs.org/packages/gatsby-source-github-api/),
-así que hagamos click en ese y empecemos a leer la docu (les recomiendo
-**SIEMPRE** leer la documentación, de todo lo que usen jaja 😉). Si leemos la
-descripción, vemos que es exactamente lo que necesitamos, así que vamos a
-instalarlo:
+<Image imgName="app-photo.png" alt="App structure" />
 
-Vayamos a la consola y en el root de nuestro proyecto (_si tenemos el servidor
-local de Gatsby, lo frenamos con `Ctrl + C`_) y tipeemos lo siguiente:
+Yo dividiria esta aplicacion en los siguientes componentes:
 
-```bash
-npm i gatsby-source-github-api
+- **Title**
+- **Card**
+- **Button**
+- **List**
+
+Genial, ya definido los componentes que vamos a utilizar, nos dirigimos a la carpeta `/src` y dentro de la carpeta `/components`, creamos los siguientes archivos:
+
+- **Title.jsx**
+- **Card.jsx**
+- **Button.jsx**
+- **List.jsx**
+
+**NOTA**: La extension .jsx se refiere a la sintaxis [**JSX**](https://es.reactjs.org/docs/introducing-jsx.html) de React!
+
+## Title component
+
+Todos los componentes seran funcionales, que quiere decir? que siempre sera una funcion que retorna una UI contruida con JSX.
+
+En el componente **Title**, tan solo retornaremos un `string` que contendra el titulo de nuestra aplicacion:
+
+```jsx
+import React from "react";
+
+const Title = () => <h1 className="title">pick your favorite cat</h1>;
+
+export default Title;
+
 ```
 
-Mientras se instala, sigamos leyendo la docu.
+**NOTA**: `className` se refiere a el `class` que le pasariamos a un HTML para darle estilos, en JSX se escribe de esa manera ya que `class` es una palabra reservada de JavaScript. Los estilos ya estan previamente elaborados, asi que no se preoupen por las clases implementadas 🙂
 
-Veremos que lo primero que dice es que vamos a necesitar un `token` para poder
-consumir la API de GraphQL de Github, así que vamos a www.github.com y, si
-estamos "logueados", hacemos click en nuestro avatar en la esquina superior
-derecha y en el menú seleccionamos la opción **Settings**. Luego en las opciones
-vamos a la que debería ser la última, **Developer settings**, luego **Personal
-access tokens** donde vamos a ver algo así (si es que tenemos alguna generada)
+## Card component
 
-<Image imgName="tokens.png" alt="Personal access tokens" />
+En el componente **Card**, necesitaremos importar el componente **Button** e implementarlo. Podemos implementar los botones que deseemos, en nuestro caso solo coloque 2.
 
-Como tenemos que generar una nueva para nuestra interacción con el plugin,
-tenemos que hacer click en el botón **Generate new token**. Acá Github nos va a
-recibir con una linda tabla llena de checkboxes pero no se preocupen, es por su
-bien 😌. En el input vamos a poner algo descriptivo sobre para qué es este
-token, por ejemplo, _Portfolio personal_.
+```jsx
+import React from "react";
+import Button from "./Button";
 
-Luego debemos elegir a qué cosas podemos acceder con este token, y ya que
-solamente nos interesa leer datos, seleccionemos algunos que sean **read**. En
-nuestro caso con seleccionar las opciones **public_repo** y **read:user** nos
-alcanza. Una vez que seleccionemos esto, vamos abajo de todo a **Generate
-token**.
+const Card = () => {
+  return (
+    <div className="card">
+        <p className="subtitle">
+          <span className="emoji" role="img" aria-label="Cat">
+            🐈
+          </span>
+        </p>
 
-<Image imgName="token_gen.png" alt="Token generado" />
+      <div className="button-wrapper">
+        <Button category="random" />
+        <Button category="favorite" />
+      </div>
+    </div>
+  );
+};
 
-_No se gasten en usar ese token que ya lo borré antes de escribir esto por las
-dudas, paranoico yo?_ 🤣
+export default Card;
 
-Copien y guarden en algún archivo de texto ese token por las dudas, lo digo por
-experiencia propia jajaja.
-
-Ahora sigamos con la configuración del plugin, nos dice que una vez que tengamos
-el `token` y hayamos instalado el plugin, que vayamos a nuestro archivo
-`gatsby-config.js` para agregarlo y configurarlo con el siguiente código:
-
-```javascript
-// En gatsby-config.js
-plugins: [
-  {
-    resolve: `gatsby-source-github-api`,
-    options: {
-      // token: el que generamos recién, requerido por la API de GitHub
-      token: `nuestro-token-va-acá`,
-
-      // GraphQLquery: con esta query, traemos a nuestro backend lo que
-      // queremos tener disponible para mostrar en nuestro frontend
-      graphQLQuery: `
-        query {
-          /* En el próximo paso vamos a ver cómo armar la query */
-        }
-      `,
-
-      // variables: por si necesitamos utilizar variables en nuestra query,
-      // no vamos a usarlo así que podemos borrarlo
-      variables: {
-        lasVariables: 'que necesitemos'
-      },
-    },
-  },
-]
 ```
 
-Entonces hagamos eso, agreguemos a nuestro proyecto el plugin, nos quedaría así:
+**NOTA**: En el componente **Button** veran algo que se llama `category`, esto es una [**Prop**](https://es.reactjs.org/docs/components-and-props.html), conceptualmente es como los argumentos que le pasamos a una funcion para luego acceder a ellas dentro del cuerpo de nuestra funcion.
 
-```javascript
-// En gatsby-config.js
-plugins: [
-  /* [...] */
-  {
-    resolve: `gatsby-source-github-api`,
-    options: {
-      token: `079b55830a613c38aff7f4608ef2448d83db9758`,
-      graphQLQuery: `
-        query {
-          /* En el próximo paso vamos a ver cómo armar la query */
-        }
-      `,
-    },
-  },
-  /* [...] */
-]
+En nuestro caso, le estamos pasando una propiedad llamada `category` a los componentes **Button** con un valor de `"random"` o `"favorite"`. Con esto, dentro del componente **Button** tendremos acceso a esa `string` 🙂
+
+## Button component
+
+En el componente **Button**, necesitaremos importar el componente **Button** e implementarlo. Podemos implementar los botones que deseemos, en nuestro caso solo coloque 2.
+
+```jsx
+import React from "react";
+
+const Button = ({ category }) => {
+  return (
+    <button
+      type="button"
+      className={`button button--${category}`}
+    >
+      <span role="img" aria-label={category}>
+        {category === "random" ? "🎲" : "⭐️"}
+      </span>
+    </button>
+  );
+};
+
+export default Button;
+
 ```
 
-_Sí, el token lo escribí a mano porque como dije antes, lo borré y no lo guardé_
-🤦‍♂️
+**NOTA**: Dentro de JSX podemos ejecutar codigo de JavaScript, con tan solo abrir las llaves `{ }`. Como podran ver, dentro del `button` tenemos un elemento `span` que tendra el icono, pero, dependiendo de la prop que reciba, imprimira un dado o una estrella. Por eso, dentro de las `{ }` implemente una [**Condicion Ternaria**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Operadores/Conditional_Operator) 🙂
 
-Listo, todo muy lindo, pero ahora, la query?!?!? Cómo la hacemos?
+**NOTA 2**: Como podran ver, nosotros recibimos una `prop` llamada `category`. Pero, utilice algo llamado [**Destructuring**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Operadores/Destructuring_assignment), dado que `prop` es un objeto que contendra los valores que le pasamos, podemos utilizar el atajo del Destructuring para acceder directamente a los datos, abriendo los `{ }` dentro de `()` de nuestra funcion.
 
-Vayamos a la siguiente sección para aprender algo copado, `GraphQL` 🤩
+
+## List component
+
+En el componente **List**, lo manteneremos muy simple. Luego haremos un refactoring porque en el paso final haremos [**Conditional Rendering**](https://es.reactjs.org/docs/conditional-rendering.html) para renderizar la vista que deseemos dependiendo de una condicion 🙂. De momento solo dira que no hemos agregado ningun gato favorito!
+
+```jsx
+import React from "react";
+
+const List = () => {
+  return (
+    <div className="list">
+      <h2>Mi lista de favoritos</h2>
+      <p>Aun no has agregado ningun favorito :(</p>
+    </div>
+  );
+};
+
+export default List;
+
+```
+
+**NOTA**: En el componente **Button** veran algo que se llama `category`, esto es una [**prop**](https://es.reactjs.org/docs/components-and-props.html), conceptualmente es como los argumentos que le pasamos a una funcion para luego acceder a ellas dentro del cuerpo de nuestra funcion.
+
+En nuestro caso, le estamos pasando una propiedad llamada `category` a los componentes **Button** con un valor de `"random"` o `"favorite"`. Con esto, dentro del componente **Button** tendremos acceso a esa `string` 🙂
+
+## App component
+
+**App** es nuestro componente padre, este contendra nuestra logica, los eventos y el State. Asi que, necesitamos importar los componente previamente creados e implementarlos en este componente padre.
+
+```jsx
+import React from "react";
+import Title from "./components/Title";
+import Card from "./components/Card";
+import List from "./components/List";
+
+const App = () => {
+  return (
+    <div className="main-wrapper">
+      <Title />
+      <Card />
+      <List />
+    </div>
+  );
+};
+
+export default App;
+
+```
+
+**NOTA**: No hace falta importar el componente **Button** porque reside dentro de **Card**, por lo tanto se renderizara correctamente porque es **Card** quien lo contiene 🙂
+
+Muy bien! sigamos ahora al paso 2!

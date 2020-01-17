@@ -1,655 +1,113 @@
 ---
 title: Workshop - Paso 3
 path: /paso-03
-index: 6
+index: 4
 ---
 
 import Image from '../components/Image'
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@reach/tabs'
 
-Bueno, empecemos a pensar y hacer nuestro blog, **qué emoción** 😱🎉
+# Consultando una API
 
-Para nuestro blog vamos a escribir los posts en archivos MD
-([Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)),
-porque es un formato bastante amigable y se puede traducir a HTML de forma
-fácil. De más está decir que para **transformar** archivos MD a HTML tenemos un
-plugin, no? 😎 Así que empecemos por ahí, vamos a generar archivos `.md`, crear
-la fuente de datos usando un plugin `source` (el mismo que se usa ahora para las
-imágenes 😉) para que luego con el plugin de tipo `transformer` podamos acceder
-al contenido del archivo y nos convierta la data en algo amigable (HTML)
-mientras estamos consultando en el frontend usando `GraphQL` 😊
+Ya yo tengo previamente configurada una **URL** para la llamada a la API de [**Giphy**](https://giphy.com/).Esta url nos retorna un GIF de algun gatito asi que;
 
-Si algo no se entendió, recomiendo releer estos últimos renglones, y hasta
-podrían intentar hacerlo solos si se sienten confiados. Igual, si siguen
-leyendo, lo hacemos! 💪 Empecemos por
-[buscar un plugin](https://www.gatsbyjs.org/plugins/?=markdown) para manipular
-los archivos Markdown y lo instalamos, encontramos este plugin
-[gatsby-transformer-remark](https://www.gatsbyjs.org/packages/gatsby-transformer-remark/?=markdown),
-frenemos el servidor local y lo instalamos así:
+Sientanse libres de utlizar estas **URLs** que ya estan configuradas para recibir data referente a GIF aleatorio de un gatito:
 
-```bash
-npm i gatsby-transformer-remark
+- https://api.giphy.com/v1/gifs/random?api_key=gH7glaXpjdIJUfGdtE2GO5FSQzi09bbY&tag=Cat&rating=G
+- https://api.giphy.com/v1/gifs/random?api_key=r02zUovnSZ45Kz3vwb7fRkBxUuYNzv1V&tag=Cat&rating=G
+
+## Creando las funciones para los eventos - Obtener URL
+
+Para realiar una peticion, realizaremos un **GET** request a **URL** con la [**API de FETCH**](https://developer.mozilla.org/es/docs/Web/API/Fetch_API/Utilizando_Fetch) (interfaz de JavaScript para realizar peticiones HTTP).
+
+Dentro de nuestro componente **APP** vamos a crear una funcion que nos retorne la URL que necesitamos.
+
+```jsx
+const getRandomGifUrl = () => {
+    fetch(
+      "https://api.giphy.com/v1/gifs/random?api_key=r02zUovnSZ45Kz3vwb7fRkBxUuYNzv1V&tag=Cat&rating=G"
+    ) // 1
+      .then(data => data.json()) // 2
+      .then(response => {
+        setGifUrl(response.data.fixed_height_downsampled_url); // 3
+      });
+  };
+
 ```
 
-Mientras se instala, preparemos nuestro plugin **plugin-source-filesystem** para
-levantar nuestros posts de una carpeta local y que sean consultables. Creemos
-una carpeta dentro de `/src`, a la misma altura que **components**, **pages**,
-etc. y llamémosla `posts` por ejemplo. Ahora configuremos nuestro plugin igual a
-como está para las imágenes, pero para posts y ya que estamos, podemos agregar
-**gatsby-transformer-remark**:
+**NOTA**: Fetch retorna una [**PROMISE**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Promise) asi que vamos por paso:
 
-```javascript
-//En gatsby-config.js
-{
-  resolve: `gatsby-source-filesystem`,
-  options: {
-    name: `posts`,
-    path: `${__dirname}/src/posts`,
-  },
-},
-`gatsby-transformer-remark`,
-```
+- 1) fetch(URL) nos retorna una data, pero necesitamos esperar a que la peticion se complete para luego pasarle un `.then()` que explicitamente quiere decir: Que haremos luego
+- 2) Esa `data` recibida como parametro, lo retornamos como un `JSON`
+- 3) Como ultimo, ese `JSON` lo recibimos como una respuesta (`response`), y llamamos a el metodo `setGifUrl` recuerdan? Si, el metodo que setea el State.
+- 4) Pero que le pasamos a ese metodo? El `response` que recibimos, que inicialmente es un Objecto muuuuuy grande con muchos valores, asi que fui anidando propiedad por propiedad hasta llegar a la URL de tipo string que necesitaba. Ejemplo: `response -> data -> fixed_height_downsampled_url`
 
-Genial! Con esto ya tenemos configurados los plugins, el de tipo **source** nos
-permite ver qué archivos están en esa carpeta `posts` y automáticamente el de
-tipo **transformer** se va a encargar de agarrar los archivos `.md` y nos va a
-dejar manipularlos y acceder a su contenido, _transformándolo_ en HTML para
-manipularlo en el frontend 😁
+## Creando las funciones para los eventos - Setear gatos favoritos
 
-Les propongo algo, armemos un primer post y después la página donde va a estar
-el listado de nuestros posts (de cómo mostrar cada post nos encargamos después
-😉), así que empecemos por crear en `/posts` un archivo nuevo con alguna fecha
-anterior a hoy y un nombre, por ejemplo **primer-post.md** y llenémoslo con
-texto, a mi me gusta mucho [este lorem ipsum](https://jeffsum.com/):
+Como ultimo, crearemos una funcion que se encargara de agregar URLS a el State `favorites`.
 
-```markdown
----
-title: 'Mi primer post'
-date: '2019-10-20'
----
+```jsx
+const addFavoriteGif = () => {
+    if (!gifUrl) return;
 
-# Mi primer post!
-
-_Este_ es un post **BUENISIMO** y lleno de texto de
-[este lorem ipsum](https://jeffsum.com/).
-
-God help us, we're in the hands of engineers. Eventually, you do plan to have
-dinosaurs on your dinosaur tour, right? Must go faster. Remind me to thank John
-for a lovely weekend. You really think you can fly that thing? Remind me to
-thank John for a lovely weekend.
-
-Life finds a way. Life finds a way. You know what? It is beets. I've crashed
-into a beet truck. Must go faster... go, go, go, go, go! Checkmate... This thing
-comes fully loaded. AM/FM radio, reclining bucket seats, and... power windows.
-Eventually, you do plan to have dinosaurs on your dinosaur tour, right?
-```
-
-Todo muy lindo pero, qué son esos cosos `---` ahí arriba? Eso se llama
-**frontmatter** y todo lo que esté ahí adentro nos sirve como una especie de
-_metadata_ de cada post. En un ratito lo usamos y creo que se va a entender un
-poco más. Por ahora volvamos a levantar nuestro servidor local de desarrollo
-(**gatsby develop**) y vamos a ver si podemos consultar en _GraphiQL_ el post
-que acabamos de hacer 😁
-
-Si prestamos atención, vemos que se agregaron dos campos nuevos para consultar
-nuestro markdown, `allMarkdownRemark` y `markdownRemark`. Como viene siendo, el
-que tiene **all** es para traer _todos_ y el otro es para filtrar uno solo.
-Nosotros queremos listar todos! Así que listemos toda la data que podamos que
-nos parezca útil:
-
-<Image imgName="mdgraphiql.png" alt="Markdown in GraphiQL" />
-
-Recuerdan que _edges_ representaba la colección y _node_ cada uno de los objetos
-de la colección, no? Es bueno refrescarlo por las dudas 😊 Además, el plugin nos
-facilita un _excerpt_ (extracto) como para mostrar en una preview, ahora lo
-vamos a usar!
-
-**FANTASTICO**, ya tenemos el backend configurado, la consulta para traer
-nuestros posts, qué nos faltaría? Una página donde listarlos, no? Creemos
-entonces en `/pages` un archivo nuevo que se llame `blog.js` y completemos como
-hicimos para mostrar nuestros repos. La estructura y la idea del archivo sería
-muy parecida, así que les dejo cómo lo hice yo en estas pestañas así pueden
-intentarlo ustedes 😁
-
-<Tabs>
-<TabList>
-    <Tab>Soluciones</Tab>
-    <Tab>blog.js</Tab>
-</TabList>
-
-<TabPanels>
-
-<TabPanel>Para ver la solución hacé click en la pestaña 👆</TabPanel>
-
-<TabPanel>
-
-```javascript
-import React from 'react'
-import { Link, useStaticQuery, graphql } from 'gatsby'
-
-import Layout from '../components/layout'
-import SEO from '../components/seo'
-
-const BlogPage = () => {
-  const posts = useStaticQuery(graphql`
-    query {
-      allMarkdownRemark {
-        totalCount
-        edges {
-          node {
-            id
-            frontmatter {
-              title
-              date(formatString: "DD MMMM, YYYY", locale: "es")
-            }
-            excerpt
-          }
-        }
-      }
+    if (!favorites.includes(gifUrl)) {
+      setFavorites([...favorites, gifUrl]);
     }
-  `)
-  return (
-    <Layout>
-      <SEO title="Blog" />
-      <h1>Hola</h1>
-      <p>Este es mi blog :)</p>
-      <p>Tengo en total {posts.allMarkdownRemark.totalCount} post(s)</p>
-      {posts.allMarkdownRemark.edges.map(({ node }) => (
-        <article
-          style={{
-            border: '1px solid grey',
-            borderRadius: '5px',
-            margin: '24px',
-            padding: '12px',
-          }}
-        >
-          <h2>{node.frontmatter.title}</h2>
-          <i>{node.frontmatter.date}</i>
-          <p>{node.excerpt}</p>
-        </article>
-      ))}
-    </Layout>
-  )
-}
+  };
 
-export default BlogPage
 ```
 
-</TabPanel>
-</TabPanels>
-</Tabs>
+Explicacion:
+- Validamos que exista una URL existente en nuestro State, si no, entonces paramos la funcion!
+- Validamos si en el Array favorites no incluya la URL actualmente seteada, esto previene que agregemos como favorito el mismo GIF 2 veces ✋
+- Como ultimo, llamamos el metodo `setFavorites()` para setear el State `favorites` y le pasamos como argumento: Un nuevo arreglo con la copia del State anterior + el nuevo URL que agregaste como favorito.
 
-Una vez que lo tengamos todo listo, guardamos el archivo, esperamos un poquito a
-que se haga el _rebuild_ en nuestro servidor local y vamos a nuestra página
-recién creada a ver qué tan lindo quedó todo! http://localhost:8000/blog
+**NOTA**: La sintaxis de los `...` se refiere al [**Spread Operator**](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Operadores/Spread_operator), lo que hace es traerte una refencia de los valores ya sea de un Arreglo o un Objeto sin tener que modificar el original, dado que los Objetos en JavaScript son de tipo Referencia.
 
-Listo ya tenemos nuestro blog, chau nos vemos (?) jaja nah, todavía falta ver
-cómo hacemos para ver cada post por separado 😜 Además, no vamos a tener un blog
-con un solo post, armemos otro! Esta vez usemos la fecha de hoy:
+Con esto, estariamos seteando un nuevo arreglo en el State `favorites` con todo los valores previamente guardados + el nuevo que acabas de agregar.
 
-Nombre de ejemplo: **segundo-post.md**
-
-```markdown
----
-title: 'Segundo post'
-date: '2019-10-26'
 ---
 
-Vengo a hacerle compañía al primer post, que cree que tiene data interesante
-pero son palabras sin sentido, pobrecito 😢
-```
+El componente **APP** quedaria de esta manera finalmente:
 
-Guardamos y debería sumarse a la lista de nuestros posts automáticamente ✨ La
-magia de Gatsby y GraphQL y todo esto 😍 Pero... **El orden de esos posts me
-parece que está MAL, yo quiero el más nuevo arriba de todo...** Ah, sí, tal como
-usamos filtros para traer nuestros repos antes, tenemos una forma de **ordenar**
-los posts (se acuerdan del **orderBy** que usamos?), cambiemos en la query de
-nuestro archivo `blog.js` donde dice solamente `allMarkdownRemark` por:
+```jsx
+import React, { useState } from "react";
+import Title from "./components/Title";
+import Card from "./components/Card";
+import List from "./components/List";
 
-```javascript
-allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC })
-```
+const App = () => {
+  const [gifUrl, setGifUrl] = useState("");
+  const [favorites, setFavorites] = useState([]);
 
-_Sí, entre frontmatter y date hay 3 (tres) guiones bajos, no me miren mal_
+  const getRandomGifUrl = () => {
+    fetch(
+      "https://api.giphy.com/v1/gifs/random?api_key=r02zUovnSZ45Kz3vwb7fRkBxUuYNzv1V&tag=Cat&rating=G"
+    )
+      .then(data => data.json())
+      .then(response => {
+        setGifUrl(response.data.fixed_height_downsampled_url);
+      });
+  };
 
-Y ahora vamos a tener nuestros posts ordenados debidamente, con el más nuevo
-arriba de todo 😉 Hicimos que se ordene (_sort_) y le indicamos que use el campo
-(_field_) fecha del frontmatter (_frontmatter\_\_\_date_) en orden descendiente
-(_order: DESC_).
+  const addFavoriteGif = () => {
+    if (!gifUrl) return;
 
-Phew~ cansador esto, no? Pero falta lo mejor! (?) Mostrar los posts uno por uno,
-que por lo que sabemos hasta ahora, para hacer páginas creamos un archivo en
-`/pages` y ya está, aunque crear **una página por cada post** no suena muy
-conveniente, no? 🤔 Necesitamos una forma de crear las páginas de manera
-_programática_, y para eso tenemos APIs en nuestro backend 😎 Vamos a usar
-[**onCreateNode**](https://www.gatsbyjs.org/docs/node-apis/#onCreateNode) y
-[**createPages**](https://www.gatsbyjs.org/docs/node-apis/#createPages).
+    if (!favorites.includes(gifUrl)) {
+      setFavorites([...favorites, gifUrl]);
+    }
+  };
 
-Empecemos por ver para qué usamos cada uno, así no nos mandamos y tenemos que
-volver para atrás:
-
-- **createPages** nos sirve para crear páginas de forma programática, a las
-  cuales se les genera un _contexto_ y nosotros por ese contexto podemos pasarle
-  data de cada post, con qué podríamos traer data de cada post, se les ocurre?
-  😉 Cuando tengamos eso, nos falta una forma de generar una URL para poder
-  acceder a cada `page` creada, para eso usamos **onCreateNode**.
-- **onCreateNode** vamos a usarlo para que cuando se cree un
-  [Nodo](https://developer.mozilla.org/es/docs/Web/API/Node), tome ciertos datos
-  únicos de cada post y nos genere algo que se llama _slug_, que va a ser lo que
-  defina la URL del post.
-
-### Creando las URLs
-
-Empecemos por crear la URL para ya tenerla en el contexto cuando creemos cada
-`page`, así que entremos a **gatsby-node.js** e implementemos las APIs, que se
-implementan exportando funciones con el nombre de la API a utilizar:
-
-```javascript
-exports.onCreateNode = ({ node }) => {
-  console.log('Tipo de nodo: ', node.internal.type)
-}
-```
-
-Ahora cortemos y volvamos a correr el servidor local, y miremos la consola, si
-prestamos atención se van a crear distintos tipos de nodos: SitePage,
-SitePlugin, Directory, File... Pero hay uno que nos interesa más que otros,
-dijimos que íbamos a trabajar con nuestros posts que son de tipo **Markdown**,
-si vemos en la consola lo más parecido es **MarkdownRemark**! Ya tenemos cómo
-filtrar nuestros posts entre los nodos creados durante el _build_, ahora a
-trabajarlos!
-
-Para generar el _slug_ con algo propio de cada post, podemos utilizar el nombre
-de archivo, lo cual sería único de cada nodo. Pero para poder acceder a esto,
-necesitamos _movernos en el grafo de nodos_ (suena de una peli de ciencia
-ficción 😂) e ir al nodo padre, que es `File`, el tipo de nodo que contiene la
-data de nuestros archivos en disco, modifiquemos en nuestra función recién
-creada:
-
-```javascript
-exports.onCreateNode = ({ node, getNode }) => {
-  if (node.internal.type === `MarkdownRemark`) {
-    const fileNode = getNode(node.parent)
-    console.log(`\n`, fileNode.relativePath)
-  }
-}
-```
-
-Como estamos modificando los archivos **gatsby-algo**, por cada modificación que
-hagamos, si queremos ver los resultados, debemos frenar y volver a correr
-**gatsby develop** en la consola. Y vamos a ver los nombres de nuestros archivos
-flotando por ahí! **YAY** 🎉🥳
-
-Sigamos, como la gente de Gatsby es buena y nos quiere, nos dice que la lógica
-para crear estos _slugs_ es complicada, así que el plugin
-**gatsby-source-filesystem** ya viene con una función para ayudarnos para "crear
-el path del archivo", ergo `createFilePath`:
-
-```javascript
-//Acuerdense que la sintaxis acá es 'node-style'
-const { createFilePath } = require(`gatsby-source-filesystem`)
-
-exports.onCreateNode = ({ node, getNode }) => {
-  if (node.internal.type === `MarkdownRemark`) {
-    console.log(createFilePath({ node, getNode }))
-  }
-}
-```
-
-Y si reiniciamos el server, vemos los strings! Ya tenemos el dato necesario, lo
-que tenemos que hacer ahora es sumarlo a la información del nodo, _extender_ el
-nodo, para que podamos consultar el _slug_ en el frontend. Cuando implementamos
-una API, recibe como parámetros una colección de `actions` (acciones) que
-podemos usar para manipular state, en nuestro caso nos sirve cierta _action_
-para extender nuestros nodos:
-[**createNodeField**](https://www.gatsbyjs.org/docs/actions/#createNodeField).
-
-```javascript
-const { createFilePath } = require(`gatsby-source-filesystem`)
-
-exports.onCreateNode = ({ node, getNode, actions }) => {
-  // Conseguimos la action necesaria mediante destructuring
-  const { createNodeField } = actions
-  if (node.internal.type === `MarkdownRemark`) {
-    const slug = createFilePath({ node, getNode })
-    // Generamos un nuevo field que extiende nuestro nodo
-    createNodeField({
-      node,
-      name: `slug`,
-      value: slug,
-    })
-  }
-}
-```
-
-Reiniciemos el servidor y vayamos a GraphiQL, deberíamos tener un valor nuevo
-adentro de cada allMarkdownRemark -> edges -> node que se llame `fields`!
-Prueben si trae los slugs que recién creamos y sigamos con la creación de las
-páginas con **createPages**! 😁😁
-
-### Creando páginas de forma programática
-
-Bueno, venimos bien, agregamos un valor a los nodos de Markdown (nuestros
-posts), lo cual nos habilita a poder **consultar ese nuevo valor y mandarlo al
-front en cada página mediante createPages**. Tengan a mano esto que está en
-negrita para entender lo que estemos haciendo. El tema es que cada página creada
-necesita un _template_ (plantilla) donde mostrar la data que consigamos de
-nuestros posts, así que empecemos por ahí, creemos una carpeta `/templates`
-adentro de /src, y en /templates creemos un archivo `blog-post.js` con lo
-siguiente:
-
-```javascript
-import React from 'react'
-import Layout from '../components/layout'
-
-export default () => {
   return (
-    <Layout>
-      <div>Acá va un post!</div>
-    </Layout>
-  )
-}
+    <div className="main-wrapper">
+      <Title />
+      <Card/>
+      <List />
+    </div>
+  );
+};
+
+export default App;
+
+
+
 ```
-
-Ahora que tenemos una plantilla (que por ahora no hace nada mas que mostrar ese
-texto siempre), sigamos con lo nuestro, nosotros sabemos que para usar una API
-en nuestro backend, tenemos que exportar la función con el mismo nombre que la
-API a usar, así que igual que antes, agregamos `exports.createPages` pero con
-una salvedad: entre las cosas que nuestras APIs reciben por parámetro (de las
-cuales antes usamos node, getNode, actions), vamos a usar `graphql`, la cual es
-una función que retorna una
-[Promise](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Promise),  
-las cuales se pueden resolver de dos formas, con `.then()` y `.catch()` o con
-`async/await`. Vamos con la segunda opción ya que de otra forma tendríamos
-algunos problemas de asincronismo con las funciones que nos provee Gatsby, así
-que agreguemos esto:
-
-```javascript
-//En gatsby-node.js, abajo de nuestra función exports.createNode:
-exports.createPages = async ({ graphql, actions }) => {
-  const result = await graphql(`
-    query {
-      allMarkdownRemark {
-        edges {
-          node {
-            fields {
-              slug
-            }
-          }
-        }
-      }
-    }
-  `)
-  console.log(JSON.stringify(result, null, 2))
-}
-```
-
-Y vamos a ver en la consola el resultado de nuestra query, son los _slugs_ que
-generamos antes! 😄
-
-<Image
-  imgName="cmdquery.png"
-  alt="Slug in Command Line"
-  style={{ width: '25vw', margin: '0 auto' }}
-/>
-
-Ya tenemos el _template_ y los _slugs_, ahora unamos todo con una _action_ de
-**createPages** que nos permite configurar y pasar data por medio de un
-_context_ a cada página creada:
-[**createPage**](https://www.gatsbyjs.org/docs/actions/#createPage) 😏
-
-Vamos a mandarle en **path**, la dirección que va a tener cada post, o sea, el
-_slug_; también vamos a mandarle en **component** una referencia al componente
-_template_ que creamos antes, y por **context** vamos a mandar el _slug_, que la
-data enviada por **context** va a estar disponible en **queries de página como
-variables de GraphQL**. Ah, y para referenciar al componente ahora que estamos
-desde el backend, necesitamos importar `path`:
-
-```javascript
-//En gatsby-node.js
-//Arriba de todo agregamos esta línea
-const path = require(`path`)
-
-//Luego nuestro createPages debería quedar así
-exports.createPages = async ({ graphql, actions }) => {
-  //Conseguimos nuestra action
-  const { createPage } = actions
-  const result = await graphql(`
-    query {
-      allMarkdownRemark {
-        edges {
-          node {
-            fields {
-              slug
-            }
-          }
-        }
-      }
-    }
-  `)
-  result.data.allMarkdownRemark.edges.forEach(({ node }) => {
-    //Configuramos cada página con la data de cada nodo
-    createPage({
-      path: node.fields.slug,
-      component: path.resolve(`./src/templates/blog-post.js`),
-      context: {
-        slug: node.fields.slug,
-      },
-    })
-  })
-}
-```
-
-Nuestro **gatsby-node.js** debería quedar algo así:
-
-<Tabs>
-<TabList>
-    <Tab>Soluciones</Tab>
-    <Tab>gatsby-node.js</Tab>
-</TabList>
-
-<TabPanels>
-
-<TabPanel>Para ver la solución hacé click en la pestaña 👆</TabPanel>
-
-<TabPanel>
-
-```javascript
-const path = require(`path`)
-const { createFilePath } = require(`gatsby-source-filesystem`)
-
-exports.onCreateNode = ({ node, getNode, actions }) => {
-  // Conseguimos la action necesaria mediante destructuring
-  const { createNodeField } = actions
-  if (node.internal.type === `MarkdownRemark`) {
-    const slug = createFilePath({ node, getNode })
-    // Generamos un nuevo field que extiende nuestro nodo
-    createNodeField({
-      node,
-      name: `slug`,
-      value: slug,
-    })
-  }
-}
-
-exports.createPages = async ({ graphql, actions }) => {
-  //Conseguimos nuestra action
-  const { createPage } = actions
-  const result = await graphql(`
-    query {
-      allMarkdownRemark {
-        edges {
-          node {
-            fields {
-              slug
-            }
-          }
-        }
-      }
-    }
-  `)
-  result.data.allMarkdownRemark.edges.forEach(({ node }) => {
-    //Configuramos cada página con la data de cada nodo
-    createPage({
-      path: node.fields.slug,
-      component: path.resolve(`./src/templates/blog-post.js`),
-      context: {
-        slug: node.fields.slug,
-      },
-    })
-  })
-}
-```
-
-</TabPanel>
-</TabPanels>
-</Tabs>
-
-Si reiniciamos el servidor local se van a crear nuestras páginas, **VAMO!**
-Pero, cómo accedemos? A mano? 🤔 Una forma de ver las páginas creadas es forzar
-un 404, así que vayamos a una dirección random http://localhost:8000/hn934b3 y
-vamos a verlas en el listado, háganle click y verán que carga el template que
-hicimos, que mucho como plantilla no estaría funcionando 🤣 Arreglemos eso!
-
-Lo que podemos hacer ahora es consultar la data de cada post filtrando por su
-**slug**! Eso lo hacemos en nuestro template con una query **de página**:
-
-```javascript
-import React from 'react'
-import { graphql } from 'gatsby'
-import Layout from '../components/layout'
-
-export default ({ data }) => {
-  const post = data.markdownRemark
-  return (
-    <Layout>
-      <div>
-        <h1>{post.frontmatter.title}</h1>
-        <div dangerouslySetInnerHTML={{ __html: post.html }} />
-      </div>
-    </Layout>
-  )
-}
-
-export const query = graphql`
-  query($slug: String!) {
-    markdownRemark(fields: { slug: { eq: $slug } }) {
-      html
-      frontmatter {
-        title
-      }
-    }
-  }
-`
-```
-
-Eh? _Query de página_??? Sí, en Gatsby hay dos formas de consultar data:
-
-- **Normal (o Page) Queries** (Query de página)
-- **Static Queries** (Query estática)
-
-Una de las principales diferencias entre las dos es que la _Query de página_
-puede usarse solamente en los componentes de **página**, y era la única forma de
-consultar data en Gatsby v1. Luego desarrollaron la _Query estática_, que
-apareció en Gatsby v2 y fue fundamental para eliminar lo que se llama _prop
-drilling_, que es pasar data (o state) mediante props de padre a hijos en
-múltiples niveles, suponiendo que a veces esa data se pasaba unas 3 ó 4 (o más)
-veces, lo cual volvía el código inmantenible. Las _Static Queries_ pueden
-utilizarse tanto en componentes **comunes** como en componentes de **página**.
-
-Y la última gran diferencia es que la _Query de página_ **acepta variables**,
-las cuales se reciben mediante el _contexto de página_ o **pageContext**, el cual 
-creamos recién en gatsby-node.js en la función `createPage`. La estática, tal 
-como su nombre indica, **no** acepta variables porque **no** tiene acceso al 
-contexto de página.
-
-En la query de página de arriba vemos que se indica que esa query recibe una
-variable (indicada con el signo `$`) de nombre **slug** y de tipo **String**, el
-signo de exclamación indica que esa variable es `requerida`.
-
-Bueno, sigamos con el blog! 😛
-
-Ya casi no nos queda nada! Nos falta vincular cada post del listado con su
-página creada! Vayamos a `blog.js` en **pages** y agreguemos lo que nos falta,
-se los dejo a ustedes y la solución acá abajo, no pispeen sin intentarlo eh!!!
-😝
-
-<Tabs>
-<TabList>
-    <Tab>Soluciones</Tab>
-    <Tab>pages/blog.js</Tab>
-</TabList>
-
-<TabPanels>
-
-<TabPanel>Para ver la solución hacé click en la pestaña 👆</TabPanel>
-
-<TabPanel>
-
-```javascript
-import React from 'react'
-import { Link, useStaticQuery, graphql } from 'gatsby'
-
-import Layout from '../components/layout'
-import SEO from '../components/seo'
-
-const BlogPage = () => {
-  const posts = useStaticQuery(graphql`
-    query {
-      allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
-        totalCount
-        edges {
-          node {
-            id
-            frontmatter {
-              title
-              date(formatString: "DD MMMM, YYYY", locale: "es")
-            }
-            fields {
-              slug
-            }
-            excerpt
-          }
-        }
-      }
-    }
-  `)
-  return (
-    <Layout>
-      <SEO title="Blog" />
-      <h1>Hola</h1>
-      <p>Este es mi blog :)</p>
-      <p>Tengo en total {posts.allMarkdownRemark.totalCount} post(s)</p>
-      {posts.allMarkdownRemark.edges.map(({ node }) => (
-        <Link
-          to={node.fields.slug}
-          style={{ textDecoration: 'none', color: '#2f2f2f' }}
-        >
-          <article
-            style={{
-              border: '1px solid grey',
-              borderRadius: '5px',
-              margin: '24px',
-              padding: '12px',
-            }}
-          >
-            <h2>{node.frontmatter.title}</h2>
-            <i>{node.frontmatter.date}</i>
-            <p>{node.excerpt}</p>
-          </article>
-        </Link>
-      ))}
-    </Layout>
-  )
-}
-
-export default BlogPage
-```
-
-</TabPanel>
-</TabPanels>
-</Tabs>
-
-Terminado nuestro blog! Ya nos queda ponerlo lindo pero la funcionalidad está!
-😀😀😀😀 Espero que hayan disfrutado este workshop, cualquier duda o sugerencia
-escríbanme y con gusto ayudo en lo que pueda, pueden encontrarme en Twitter como
-[@AgustinDMulet](https://twitter.com/AgustinDMulet), nos vemos gente!!!
